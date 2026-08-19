@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_URL from "../config/api";
 
 const AdminOrders = () => {
   // ======================================================
@@ -70,7 +71,7 @@ const AdminOrders = () => {
         localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/orders?page=${page}&limit=${limit}&search=${encodeURIComponent(
+        `${API_URL}/api/admin/orders?page=${page}&limit=${limit}&search=${encodeURIComponent(
           search
         )}&status=${encodeURIComponent(status)}`,
         {
@@ -138,7 +139,7 @@ const AdminOrders = () => {
         localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/orders/${orderId}/status`,
+        `${API_URL}/api/admin/orders/${orderId}/status`,
         {
           method: "PATCH",
 

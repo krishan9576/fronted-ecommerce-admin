@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../config/api";
 
 const AdminProducts = () => {
   // ======================================================
@@ -63,7 +64,7 @@ const AdminProducts = () => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/products?page=${page}&limit=${limit}&search=${encodeURIComponent(
+        `${API_URL}/api/admin/products?page=${page}&limit=${limit}&search=${encodeURIComponent(
           search
         )}`,
         {
@@ -97,7 +98,6 @@ const AdminProducts = () => {
       setTotalPages(
         data.totalPages || 1
       );
-
     } catch (error) {
       console.error(
         "Fetch Products Error:",
@@ -105,7 +105,6 @@ const AdminProducts = () => {
       );
 
       alert("Server error");
-
     } finally {
       setLoading(false);
     }
@@ -119,42 +118,34 @@ const AdminProducts = () => {
     e.preventDefault();
 
     try {
-      const token =
-        localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       const url = editingProductId
-        ? `http://localhost:5000/api/admin/products/${editingProductId}`
-        : "http://localhost:5000/api/admin/products";
+        ? `${API_URL}/api/admin/products/${editingProductId}`
+        : `${API_URL}/api/admin/products`;
 
       const method = editingProductId
         ? "PATCH"
         : "POST";
 
-      const response = await fetch(
-        url,
-        {
-          method,
+      const response = await fetch(url, {
+        method,
 
-          headers: {
-            "Content-Type":
-              "application/json",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
 
-            Authorization:
-              `Bearer ${token}`,
-          },
+        body: JSON.stringify({
+          name,
+          description,
+          price: Number(price),
+          category,
+          stock: Number(stock),
+        }),
+      });
 
-          body: JSON.stringify({
-            name,
-            description,
-            price: Number(price),
-            category,
-            stock: Number(stock),
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
+      const data = await response.json();
 
       console.log(
         "Product Response:",
@@ -201,7 +192,6 @@ const AdminProducts = () => {
       // ==================================================
 
       fetchProducts();
-
     } catch (error) {
       console.error(
         "Save Product Error:",
@@ -217,29 +207,21 @@ const AdminProducts = () => {
   // ======================================================
 
   const handleEditProduct = (product) => {
-    setEditingProductId(
-      product._id
-    );
+    setEditingProductId(product._id);
 
-    setName(
-      product.name || ""
-    );
+    setName(product.name || "");
 
     setDescription(
       product.description || ""
     );
 
-    setPrice(
-      product.price ?? ""
-    );
+    setPrice(product.price ?? "");
 
     setCategory(
       product.category || ""
     );
 
-    setStock(
-      product.stock ?? ""
-    );
+    setStock(product.stock ?? "");
 
     window.scrollTo({
       top: 0,
@@ -262,33 +244,29 @@ const AdminProducts = () => {
   // ======================================================
 
   const handleDeleteProduct = async (id) => {
-    const confirmDelete =
-      window.confirm(
-        "Are you sure you want to delete this product?"
-      );
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this product?"
+    );
 
     if (!confirmDelete) {
       return;
     }
 
     try {
-      const token =
-        localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/products/${id}`,
+        `${API_URL}/api/admin/products/${id}`,
         {
           method: "DELETE",
 
           headers: {
-            Authorization:
-              `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       console.log(
         "Delete Product Response:",
@@ -309,7 +287,6 @@ const AdminProducts = () => {
       );
 
       fetchProducts();
-
     } catch (error) {
       console.error(
         "Delete Product Error:",
@@ -339,10 +316,7 @@ const AdminProducts = () => {
   // ======================================================
 
   const handleSearch = (e) => {
-    setSearch(
-      e.target.value
-    );
-
+    setSearch(e.target.value);
     setPage(1);
   };
 
@@ -352,7 +326,6 @@ const AdminProducts = () => {
 
   const handleClearSearch = () => {
     setSearch("");
-
     setPage(1);
   };
 
@@ -376,9 +349,7 @@ const AdminProducts = () => {
           color: "#222",
         }}
       >
-        <h2>
-          Loading Products...
-        </h2>
+        <h2>Loading Products...</h2>
       </div>
     );
   }
@@ -671,7 +642,6 @@ const AdminProducts = () => {
           boxSizing: "border-box",
         }}
       >
-
         {/* ==================================================
             HEADING
         ================================================== */}
@@ -692,15 +662,11 @@ const AdminProducts = () => {
 
         <form
           className="product-form"
-          onSubmit={
-            handleSubmitProduct
-          }
+          onSubmit={handleSubmitProduct}
         >
-
           {/* NAME */}
 
           <div className="form-field">
-
             <label>
               Product Name
             </label>
@@ -710,19 +676,15 @@ const AdminProducts = () => {
               placeholder="Enter product name"
               value={name}
               onChange={(e) =>
-                setName(
-                  e.target.value
-                )
+                setName(e.target.value)
               }
               required
             />
-
           </div>
 
           {/* DESCRIPTION */}
 
           <div className="form-field">
-
             <label>
               Description
             </label>
@@ -738,13 +700,11 @@ const AdminProducts = () => {
               }
               required
             />
-
           </div>
 
           {/* PRICE */}
 
           <div className="form-field">
-
             <label>
               Price
             </label>
@@ -754,19 +714,15 @@ const AdminProducts = () => {
               placeholder="Enter price"
               value={price}
               onChange={(e) =>
-                setPrice(
-                  e.target.value
-                )
+                setPrice(e.target.value)
               }
               required
             />
-
           </div>
 
           {/* CATEGORY */}
 
           <div className="form-field">
-
             <label>
               Category
             </label>
@@ -782,13 +738,11 @@ const AdminProducts = () => {
               }
               required
             />
-
           </div>
 
           {/* STOCK */}
 
           <div className="form-field">
-
             <label>
               Stock
             </label>
@@ -798,19 +752,15 @@ const AdminProducts = () => {
               placeholder="Enter stock"
               value={stock}
               onChange={(e) =>
-                setStock(
-                  e.target.value
-                )
+                setStock(e.target.value)
               }
               required
             />
-
           </div>
 
           {/* FORM BUTTONS */}
 
           <div className="form-buttons">
-
             <button
               type="submit"
               className="submit-product-button"
@@ -821,7 +771,6 @@ const AdminProducts = () => {
             </button>
 
             {editingProductId && (
-
               <button
                 type="button"
                 className="cancel-product-button"
@@ -831,11 +780,8 @@ const AdminProducts = () => {
               >
                 Cancel
               </button>
-
             )}
-
           </div>
-
         </form>
 
         <br />
@@ -849,8 +795,7 @@ const AdminProducts = () => {
         ================================================== */}
 
         <h3>
-          Total Products:{" "}
-          {totalProducts}
+          Total Products: {totalProducts}
         </h3>
 
         {/* ==================================================
@@ -858,7 +803,6 @@ const AdminProducts = () => {
         ================================================== */}
 
         <div className="search-product">
-
           <input
             type="text"
             placeholder="Search product..."
@@ -867,7 +811,6 @@ const AdminProducts = () => {
           />
 
           {search && (
-
             <button
               type="button"
               className="clear-search-button"
@@ -877,9 +820,7 @@ const AdminProducts = () => {
             >
               Clear
             </button>
-
           )}
-
         </div>
 
         <br />
@@ -889,189 +830,136 @@ const AdminProducts = () => {
         ================================================== */}
 
         <div className="products-table-wrapper">
-
           <table className="products-table">
-
             <thead>
-
               <tr>
-
-                <th>
-                  Name
-                </th>
-
-                <th>
-                  Description
-                </th>
-
-                <th>
-                  Price
-                </th>
-
-                <th>
-                  Category
-                </th>
-
-                <th>
-                  Stock
-                </th>
-
-                <th>
-                  Created At
-                </th>
-
-                <th>
-                  Actions
-                </th>
-
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Stock</th>
+                <th>Created At</th>
+                <th>Actions</th>
               </tr>
-
             </thead>
 
             <tbody>
-
               {products.length > 0 ? (
+                products.map((product) => (
+                  <tr key={product._id}>
+                    {/* NAME */}
 
-                products.map(
-                  (product) => (
+                    <td>
+                      {product.name}
+                    </td>
 
-                    <tr
-                      key={
-                        product._id
-                      }
-                    >
+                    {/* DESCRIPTION */}
 
-                      {/* NAME */}
+                    <td>
+                      {product.description}
+                    </td>
 
-                      <td>
-                        {product.name}
-                      </td>
+                    {/* PRICE */}
 
-                      {/* DESCRIPTION */}
+                    <td>
+                      ₹
+                      {Number(
+                        product.price || 0
+                      ).toLocaleString(
+                        "en-IN"
+                      )}
+                    </td>
 
-                      <td>
-                        {product.description}
-                      </td>
+                    {/* CATEGORY */}
 
-                      {/* PRICE */}
+                    <td>
+                      {product.category}
+                    </td>
 
-                      <td>
-                        ₹
-                        {Number(
-                          product.price || 0
-                        ).toLocaleString(
-                          "en-IN"
-                        )}
-                      </td>
+                    {/* STOCK */}
 
-                      {/* CATEGORY */}
+                    <td>
+                      {product.stock}
+                    </td>
 
-                      <td>
-                        {product.category}
-                      </td>
+                    {/* CREATED AT */}
 
-                      {/* STOCK */}
+                    <td>
+                      {product.createdAt
+                        ? new Date(
+                            product.createdAt
+                          ).toLocaleDateString(
+                            "en-IN"
+                          )
+                        : "N/A"}
+                    </td>
 
-                      <td>
-                        {product.stock}
-                      </td>
+                    {/* ACTIONS */}
 
-                      {/* CREATED AT */}
+                    <td>
+                      <div className="product-actions">
+                        {/* VIEW */}
 
-                      <td>
+                        <button
+                          type="button"
+                          className="view-button"
+                          onClick={() =>
+                            handleViewProduct(
+                              product._id
+                            )
+                          }
+                        >
+                          View
+                        </button>
 
-                        {product.createdAt
-                          ? new Date(
-                              product.createdAt
-                            ).toLocaleDateString()
-                          : "N/A"}
+                        {/* EDIT */}
 
-                      </td>
+                        <button
+                          type="button"
+                          className="edit-button"
+                          onClick={() =>
+                            handleEditProduct(
+                              product
+                            )
+                          }
+                        >
+                          Edit
+                        </button>
 
-                      {/* ACTIONS */}
+                        {/* DELETE */}
 
-                      <td>
-
-                        <div className="product-actions">
-
-                          {/* VIEW */}
-
-                          <button
-                            type="button"
-                            className="view-button"
-                            onClick={() =>
-                              handleViewProduct(
-                                product._id
-                              )
-                            }
-                          >
-                            View
-                          </button>
-
-                          {/* EDIT */}
-
-                          <button
-                            type="button"
-                            className="edit-button"
-                            onClick={() =>
-                              handleEditProduct(
-                                product
-                              )
-                            }
-                          >
-                            Edit
-                          </button>
-
-                          {/* DELETE */}
-
-                          <button
-                            type="button"
-                            className="delete-button"
-                            onClick={() =>
-                              handleDeleteProduct(
-                                product._id
-                              )
-                            }
-                          >
-                            Delete
-                          </button>
-
-                        </div>
-
-                      </td>
-
-                    </tr>
-
-                  )
-
-                )
-
+                        <button
+                          type="button"
+                          className="delete-button"
+                          onClick={() =>
+                            handleDeleteProduct(
+                              product._id
+                            )
+                          }
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               ) : (
-
                 <tr>
-
                   <td
                     colSpan="7"
                     style={{
-                      textAlign:
-                        "center",
-                      padding:
-                        "20px",
+                      textAlign: "center",
+                      padding: "20px",
                     }}
                   >
                     {search
                       ? "No products found for this search"
                       : "No products found"}
                   </td>
-
                 </tr>
-
               )}
-
             </tbody>
-
           </table>
-
         </div>
 
         <br />
@@ -1081,40 +969,32 @@ const AdminProducts = () => {
         ================================================== */}
 
         <div className="products-pagination">
-
           <button
-            disabled={
-              page === 1
-            }
+            type="button"
+            disabled={page === 1}
             onClick={() =>
-              setPage(
-                page - 1
-              )
+              setPage(page - 1)
             }
           >
             Previous
           </button>
 
           <span>
-            Page {page} of{" "}
-            {totalPages}
+            Page {page} of {totalPages}
           </span>
 
           <button
+            type="button"
             disabled={
               page === totalPages
             }
             onClick={() =>
-              setPage(
-                page + 1
-              )
+              setPage(page + 1)
             }
           >
             Next
           </button>
-
         </div>
-
       </div>
     </>
   );
