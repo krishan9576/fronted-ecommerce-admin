@@ -60,6 +60,7 @@ const AdminProducts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      console.log("API_URL:", API_URL);
 
       const token = localStorage.getItem("token");
 
@@ -78,7 +79,7 @@ const AdminProducts = () => {
 
       const data = await response.json();
 
-      console.log("Products Response:", data);
+      console.log("Products Response JSON:", JSON.stringify(data, null, 2));
 
       if (!response.ok) {
         alert(

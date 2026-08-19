@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 
 const AdminUsers = () => {
   // ======================================================
+  // API BASE URL
+  // ======================================================
+
+  const API_BASE_URL = "https://ecommerce-admin-bcrm.onrender.com";
+
+  // ======================================================
   // NAVIGATION
   // ======================================================
 
@@ -19,7 +25,7 @@ const AdminUsers = () => {
   // ======================================================
 
   const [page, setPage] = useState(1);
-  const [limit] = useState(5);
+  const limit = 5;
 
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -52,18 +58,32 @@ const AdminUsers = () => {
 
       const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        `http://localhost:5000/api/admin/users?page=${page}&limit=${limit}&search=${encodeURIComponent(
-          search
-        )}`,
-        {
-          method: "GET",
+      console.log("Token exists:", !!token);
 
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      if (!token) {
+        alert("Admin login token not found. Please login again.");
+        navigate("/admin/login");
+        return;
+      }
+
+      const url =
+        `${API_BASE_URL}/api/admin/users` +
+        `?page=${page}` +
+        `&limit=${limit}` +
+        `&search=${encodeURIComponent(search)}`;
+
+      console.log("Fetching Users From:", url);
+
+      const response = await fetch(url, {
+        method: "GET",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Users Response Status:", response.status);
 
       const data = await response.json();
 
@@ -74,23 +94,64 @@ const AdminUsers = () => {
       // ==================================================
 
       if (!response.ok) {
+        console.error("Users API Error:", data);
+
         alert(data.message || "Failed to fetch users");
+
+        setUsers([]);
+        setTotalUsers(0);
+        setTotalPages(1);
+
         return;
       }
 
       // ==================================================
-      // SET USERS
+      // USERS RESPONSE
       // ==================================================
 
-      setUsers(data.users || []);
+      /*
+        Expected backend response:
 
-      setTotalUsers(data.totalUsers || 0);
+        {
+          users: [],
+          totalUsers: 8,
+          totalPages: 2,
+          page: 1,
+          limit: 5
+        }
+      */
 
-      setTotalPages(data.totalPages || 1);
+      const usersData = Array.isArray(data.users)
+        ? data.users
+        : [];
+
+      setUsers(usersData);
+
+      setTotalUsers(
+        typeof data.totalUsers === "number"
+          ? data.totalUsers
+          : usersData.length
+      );
+
+      setTotalPages(
+        typeof data.totalPages === "number"
+          ? data.totalPages
+          : 1
+      );
+
+      console.log("Users Array:", usersData);
+      console.log("Total Users:", data.totalUsers);
+      console.log("Total Pages:", data.totalPages);
     } catch (error) {
       console.error("Fetch Users Error:", error);
 
-      alert("Server error");
+      setUsers([]);
+      setTotalUsers(0);
+      setTotalPages(1);
+
+      alert(
+        "Unable to connect to backend server. Please check Render backend."
+      );
     } finally {
       setLoading(false);
     }
@@ -127,12 +188,19 @@ const AdminUsers = () => {
 
       const token = localStorage.getItem("token");
 
+      if (!token) {
+        alert("Admin login token not found. Please login again.");
+        navigate("/admin/login");
+        return;
+      }
+
       const response = await fetch(
-        `http://localhost:5000/api/admin/users/${userId}`,
+        `${API_BASE_URL}/api/admin/users/${userId}`,
         {
           method: "DELETE",
 
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         }
@@ -143,7 +211,7 @@ const AdminUsers = () => {
       console.log("Delete User Response:", data);
 
       // ==================================================
-      // ERROR
+      // DELETE ERROR
       // ==================================================
 
       if (!response.ok) {
@@ -152,7 +220,7 @@ const AdminUsers = () => {
       }
 
       // ==================================================
-      // SUCCESS
+      // DELETE SUCCESS
       // ==================================================
 
       alert("User deleted successfully");
@@ -165,7 +233,7 @@ const AdminUsers = () => {
     } catch (error) {
       console.error("Delete User Error:", error);
 
-      alert("Server error");
+      alert("Unable to connect to backend server.");
     } finally {
       setDeletingUserId(null);
     }
@@ -177,7 +245,6 @@ const AdminUsers = () => {
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
-
     setPage(1);
   };
 
@@ -187,7 +254,6 @@ const AdminUsers = () => {
 
   const handleClearSearch = () => {
     setSearch("");
-
     setPage(1);
   };
 
@@ -209,6 +275,8 @@ const AdminUsers = () => {
         style={{
           padding: "20px",
           color: "#222",
+          backgroundColor: "#f5f5f5",
+          minHeight: "100vh",
         }}
       >
         <h2>Loading Users...</h2>
@@ -244,44 +312,29 @@ const AdminUsers = () => {
           .users-search {
             width: 100%;
             max-width: 500px;
-
             display: flex;
             align-items: center;
-
             gap: 10px;
-
             margin-bottom: 20px;
           }
 
           .users-search input {
             flex: 1;
-
             width: 100%;
-
             padding: 10px;
-
             font-size: 14px;
-
             border: 1px solid #aaa;
-
             border-radius: 5px;
-
             box-sizing: border-box;
           }
 
           .clear-search-button {
             padding: 10px 15px;
-
             background-color: #6c757d;
-
             color: #fff;
-
             border: none;
-
             border-radius: 5px;
-
             cursor: pointer;
-
             white-space: nowrap;
           }
 
@@ -292,63 +345,45 @@ const AdminUsers = () => {
           .users-table-wrapper {
             width: 100%;
             max-width: 100%;
-
             overflow-x: auto;
             overflow-y: hidden;
-
             -webkit-overflow-scrolling: touch;
-
             border: 1px solid #ddd;
           }
 
           .users-table {
             width: 100%;
-
             min-width: 1000px;
-
             border-collapse: collapse;
-
             background-color: #fff;
-
             color: #222;
           }
 
           .users-table th,
           .users-table td {
             padding: 10px;
-
             border: 1px solid #ddd;
-
             white-space: nowrap;
           }
 
           .users-table th {
             background-color: #ddd;
-
             font-weight: 700;
           }
 
           .user-actions {
             display: flex;
-
             align-items: center;
-
             gap: 8px;
           }
 
           .view-user-button {
             padding: 7px 12px;
-
             border: none;
-
             border-radius: 5px;
-
             background-color: #0d6efd;
-
             color: white;
-
             cursor: pointer;
-
             font-weight: 600;
           }
 
@@ -358,17 +393,11 @@ const AdminUsers = () => {
 
           .delete-user-button {
             padding: 7px 12px;
-
             border: none;
-
             border-radius: 5px;
-
             background-color: #dc3545;
-
             color: white;
-
             cursor: pointer;
-
             font-weight: 600;
           }
 
@@ -378,29 +407,21 @@ const AdminUsers = () => {
 
           .delete-user-button:disabled {
             opacity: 0.6;
-
             cursor: not-allowed;
           }
 
           .users-pagination {
             display: flex;
-
             align-items: center;
-
             gap: 15px;
-
             flex-wrap: wrap;
           }
 
           .users-pagination button {
             padding: 8px 15px;
-
             cursor: pointer;
-
             border: 1px solid #aaa;
-
             border-radius: 5px;
-
             background-color: white;
           }
 
@@ -410,12 +431,17 @@ const AdminUsers = () => {
 
           .users-pagination button:disabled {
             cursor: not-allowed;
-
             opacity: 0.5;
           }
 
           .users-count {
             margin-bottom: 15px;
+          }
+
+          .no-users {
+            text-align: center;
+            padding: 20px;
+            color: #555;
           }
 
           @media (max-width: 600px) {
@@ -426,19 +452,16 @@ const AdminUsers = () => {
 
             .users-heading {
               font-size: 25px;
-
               line-height: 1.2;
             }
 
             .users-search {
               width: 100%;
-
               max-width: 100%;
             }
 
             .users-search input {
               padding: 12px;
-
               font-size: 16px;
             }
 
@@ -448,7 +471,6 @@ const AdminUsers = () => {
 
             .users-table-wrapper {
               width: 100%;
-
               overflow-x: auto;
             }
 
@@ -458,7 +480,6 @@ const AdminUsers = () => {
 
             .users-pagination {
               justify-content: center;
-
               gap: 10px;
             }
 
@@ -475,13 +496,9 @@ const AdminUsers = () => {
         className="users-page"
         style={{
           color: "#222",
-
           backgroundColor: "#f5f5f5",
-
           minHeight: "100vh",
-
           padding: "20px",
-
           boxSizing: "border-box",
         }}
       >
@@ -513,8 +530,6 @@ const AdminUsers = () => {
             onChange={handleSearch}
           />
 
-          {/* CLEAR */}
-
           {search && (
             <button
               type="button"
@@ -535,17 +550,11 @@ const AdminUsers = () => {
             <thead>
               <tr>
                 <th>User ID</th>
-
                 <th>Name</th>
-
                 <th>Email</th>
-
                 <th>Role</th>
-
                 <th>Created At</th>
-
                 <th>Updated At</th>
-
                 <th>Actions</th>
               </tr>
             </thead>
@@ -556,19 +565,27 @@ const AdminUsers = () => {
                   <tr key={user._id}>
                     {/* USER ID */}
 
-                    <td>{user._id}</td>
+                    <td>
+                      {user._id || "N/A"}
+                    </td>
 
                     {/* NAME */}
 
-                    <td>{user.name || "N/A"}</td>
+                    <td>
+                      {user.name || "N/A"}
+                    </td>
 
                     {/* EMAIL */}
 
-                    <td>{user.email || "N/A"}</td>
+                    <td>
+                      {user.email || "N/A"}
+                    </td>
 
                     {/* ROLE */}
 
-                    <td>{user.role || "user"}</td>
+                    <td>
+                      {user.role || "user"}
+                    </td>
 
                     {/* CREATED AT */}
 
@@ -630,11 +647,7 @@ const AdminUsers = () => {
                 <tr>
                   <td
                     colSpan="7"
-                    style={{
-                      textAlign: "center",
-
-                      padding: "20px",
-                    }}
+                    className="no-users"
                   >
                     {search
                       ? "No users found for this search"
@@ -658,7 +671,7 @@ const AdminUsers = () => {
           <button
             type="button"
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
+            onClick={() => setPage((prev) => prev - 1)}
           >
             Previous
           </button>
@@ -673,8 +686,8 @@ const AdminUsers = () => {
 
           <button
             type="button"
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
+            disabled={page >= totalPages}
+            onClick={() => setPage((prev) => prev + 1)}
           >
             Next
           </button>
