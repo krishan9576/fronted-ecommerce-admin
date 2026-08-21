@@ -3,6 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const AdminProductDetails = () => {
   // ======================================================
+  // API BASE URL
+  // ======================================================
+
+  const API_BASE_URL =
+    "https://ecommerce-admin-bcrm.onrender.com";
+
+  // ======================================================
   // NAVIGATION
   // ======================================================
 
@@ -19,7 +26,6 @@ const AdminProductDetails = () => {
   // ======================================================
 
   const [product, setProduct] = useState(null);
-
   const [loading, setLoading] = useState(true);
 
   // ======================================================
@@ -30,28 +36,44 @@ const AdminProductDetails = () => {
     try {
       setLoading(true);
 
-      const token =
-        localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        `http://localhost:5000/api/admin/products/${id}`,
-        {
-          method: "GET",
+      console.log("Token exists:", !!token);
 
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        }
+      if (!token) {
+        alert("Admin login token not found. Please login again.");
+        navigate("/admin/login");
+        return;
+      }
+
+      const url = `${API_BASE_URL}/api/admin/products/${id}`;
+
+      console.log("Fetching Product Details From:", url);
+
+      const response = await fetch(url, {
+        method: "GET",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(
+        "Product Details Response Status:",
+        response.status
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       console.log(
         "Product Details Response:",
         data
       );
+
+      // ==================================================
+      // RESPONSE ERROR
+      // ==================================================
 
       if (!response.ok) {
         alert(
@@ -59,32 +81,29 @@ const AdminProductDetails = () => {
             "Failed to fetch product"
         );
 
+        setProduct(null);
+
         return;
       }
 
-      /*
-        Backend response agar:
-
-        {
-          message: "...",
-          product: {...}
-        }
-
-        hai to product use hoga.
-      */
+      // ==================================================
+      // SET PRODUCT
+      // ==================================================
 
       setProduct(
         data.product || null
       );
-
     } catch (error) {
       console.error(
         "Fetch Product Details Error:",
         error
       );
 
-      alert("Server error");
+      alert(
+        "Unable to connect to backend server."
+      );
 
+      setProduct(null);
     } finally {
       setLoading(false);
     }
@@ -110,6 +129,8 @@ const AdminProductDetails = () => {
         style={{
           padding: "20px",
           color: "#222",
+          backgroundColor: "#f5f5f5",
+          minHeight: "100vh",
         }}
       >
         <h2>
@@ -129,6 +150,8 @@ const AdminProductDetails = () => {
         style={{
           padding: "20px",
           color: "#222",
+          backgroundColor: "#f5f5f5",
+          minHeight: "100vh",
         }}
       >
         <h2>
@@ -136,6 +159,7 @@ const AdminProductDetails = () => {
         </h2>
 
         <button
+          type="button"
           onClick={() =>
             navigate("/admin/products")
           }
@@ -149,7 +173,7 @@ const AdminProductDetails = () => {
             cursor: "pointer",
           }}
         >
-          Back to Products
+          ← Back to Products
         </button>
       </div>
     );
@@ -161,10 +185,6 @@ const AdminProductDetails = () => {
 
   return (
     <>
-      {/* ==================================================
-          RESPONSIVE CSS
-      ================================================== */}
-
       <style>
         {`
 
@@ -289,30 +309,21 @@ const AdminProductDetails = () => {
         `}
       </style>
 
-      {/* ==================================================
-          MAIN CONTAINER
-      ================================================== */}
-
       <div className="product-details-page">
 
-        {/* ==================================================
-            HEADING
-        ================================================== */}
+        {/* HEADING */}
 
         <h1 className="product-details-heading">
           Product Details
         </h1>
 
-        {/* ==================================================
-            PRODUCT CARD
-        ================================================== */}
+        {/* PRODUCT CARD */}
 
         <div className="product-details-card">
 
           {/* NAME */}
 
           <div className="product-detail-row">
-
             <div className="product-detail-label">
               Product Name
             </div>
@@ -320,13 +331,11 @@ const AdminProductDetails = () => {
             <div className="product-detail-value">
               {product.name || "N/A"}
             </div>
-
           </div>
 
           {/* DESCRIPTION */}
 
           <div className="product-detail-row">
-
             <div className="product-detail-label">
               Description
             </div>
@@ -334,13 +343,11 @@ const AdminProductDetails = () => {
             <div className="product-detail-value">
               {product.description || "N/A"}
             </div>
-
           </div>
 
           {/* PRICE */}
 
           <div className="product-detail-row">
-
             <div className="product-detail-label">
               Price
             </div>
@@ -351,13 +358,11 @@ const AdminProductDetails = () => {
                 product.price || 0
               ).toLocaleString("en-IN")}
             </div>
-
           </div>
 
           {/* CATEGORY */}
 
           <div className="product-detail-row">
-
             <div className="product-detail-label">
               Category
             </div>
@@ -365,13 +370,11 @@ const AdminProductDetails = () => {
             <div className="product-detail-value">
               {product.category || "N/A"}
             </div>
-
           </div>
 
           {/* STOCK */}
 
           <div className="product-detail-row">
-
             <div className="product-detail-label">
               Stock
             </div>
@@ -379,13 +382,11 @@ const AdminProductDetails = () => {
             <div className="product-detail-value product-stock">
               {product.stock ?? 0}
             </div>
-
           </div>
 
           {/* PRODUCT ID */}
 
           <div className="product-detail-row">
-
             <div className="product-detail-label">
               Product ID
             </div>
@@ -393,56 +394,41 @@ const AdminProductDetails = () => {
             <div className="product-detail-value">
               {product._id || "N/A"}
             </div>
-
           </div>
 
           {/* CREATED AT */}
 
           <div className="product-detail-row">
-
             <div className="product-detail-label">
               Created At
             </div>
 
             <div className="product-detail-value">
-
               {product.createdAt
                 ? new Date(
                     product.createdAt
-                  ).toLocaleString(
-                    "en-IN"
-                  )
+                  ).toLocaleString("en-IN")
                 : "N/A"}
-
             </div>
-
           </div>
 
           {/* UPDATED AT */}
 
           <div className="product-detail-row">
-
             <div className="product-detail-label">
               Updated At
             </div>
 
             <div className="product-detail-value">
-
               {product.updatedAt
                 ? new Date(
                     product.updatedAt
-                  ).toLocaleString(
-                    "en-IN"
-                  )
+                  ).toLocaleString("en-IN")
                 : "N/A"}
-
             </div>
-
           </div>
 
-          {/* ==================================================
-              ACTION BUTTONS
-          ================================================== */}
+          {/* ACTION BUTTONS */}
 
           <div className="product-details-actions">
 
@@ -464,9 +450,7 @@ const AdminProductDetails = () => {
               type="button"
               className="edit-product-button"
               onClick={() =>
-                navigate(
-                  "/admin/products"
-                )
+                navigate("/admin/products")
               }
             >
               Edit Product
@@ -475,7 +459,6 @@ const AdminProductDetails = () => {
           </div>
 
         </div>
-
       </div>
     </>
   );
