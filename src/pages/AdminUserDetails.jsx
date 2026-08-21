@@ -3,6 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const AdminUserDetails = () => {
   // ======================================================
+  // API BASE URL
+  // ======================================================
+
+  const API_BASE_URL =
+    "https://ecommerce-admin-bcrm.onrender.com";
+
+  // ======================================================
   // NAVIGATION
   // ======================================================
 
@@ -19,7 +26,6 @@ const AdminUserDetails = () => {
   // ======================================================
 
   const [user, setUser] = useState(null);
-
   const [loading, setLoading] = useState(true);
 
   // ======================================================
@@ -30,18 +36,35 @@ const AdminUserDetails = () => {
     try {
       setLoading(true);
 
-      const token =
-        localStorage.getItem("token");
+      const token = localStorage.getItem("token");
+
+      console.log("Token exists:", !!token);
+      console.log(
+        "Fetching User Details From:",
+        `${API_BASE_URL}/api/admin/users/${id}`
+      );
+
+      if (!token) {
+        alert("Admin login token not found. Please login again.");
+        navigate("/admin/login");
+        return;
+      }
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/users/${id}`,
+        `${API_BASE_URL}/api/admin/users/${id}`,
         {
           method: "GET",
 
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         }
+      );
+
+      console.log(
+        "User Details Response Status:",
+        response.status
       );
 
       const data = await response.json();
@@ -51,27 +74,39 @@ const AdminUserDetails = () => {
         data
       );
 
+      // ==================================================
+      // RESPONSE ERROR
+      // ==================================================
+
       if (!response.ok) {
         alert(
           data.message ||
             "Failed to fetch user"
         );
 
+        setUser(null);
+
         return;
       }
+
+      // ==================================================
+      // SET USER
+      // ==================================================
 
       setUser(
         data.user || null
       );
-
     } catch (error) {
       console.error(
         "Fetch User Details Error:",
         error
       );
 
-      alert("Server error");
+      alert(
+        "Unable to connect to backend server."
+      );
 
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -97,6 +132,8 @@ const AdminUserDetails = () => {
         style={{
           padding: "20px",
           color: "#222",
+          backgroundColor: "#f5f5f5",
+          minHeight: "100vh",
         }}
       >
         <h2>
@@ -116,6 +153,8 @@ const AdminUserDetails = () => {
         style={{
           padding: "20px",
           color: "#222",
+          backgroundColor: "#f5f5f5",
+          minHeight: "100vh",
         }}
       >
         <h2>
@@ -371,6 +410,8 @@ const AdminUserDetails = () => {
 
           <div className="user-details-actions">
 
+            {/* BACK */}
+
             <button
               type="button"
               className="back-button"
@@ -380,6 +421,8 @@ const AdminUserDetails = () => {
             >
               ← Back to Users
             </button>
+
+            {/* EDIT */}
 
             <button
               type="button"
